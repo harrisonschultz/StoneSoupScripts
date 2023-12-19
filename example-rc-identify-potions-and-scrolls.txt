@@ -242,7 +242,7 @@ function initialize_ally_table()
     for y = los, -los, -1 do
         for x = -los, los do
             local monster_details = monster.get_monster_at(x, y)
-            if monster_details and monster_details:is_safe() then
+            if monster_details and monster_details:attitude() == 4 then
                 allies[count] = monster_details
                 count = count + 1
             end
