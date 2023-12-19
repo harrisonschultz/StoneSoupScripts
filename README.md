@@ -23,3 +23,17 @@ This will automatically identify all scrolls and potions in the recommended way 
 - All scrolls/potions are used/identified in descending order starting with your highest quantity stack.
 
 - Unidentified potions will never be used automatically. Only unidentifed scrolls.
+
+### To Install and Use
+
+ 1. Copy your Dungeon Crawl Stone Soup rc file and paste it into your favorite text editor (like notepad)
+ 2. Save it so you have a backup
+ 3. Copy the contents of the identify-potions-and-scrolls.lua file.
+ 4. In your text editor with your rc file, add curly brackets `{ }` to the bottom of the document
+ 5. Place your cursor within the curly brackets and paste the contents of the identify-potions-and-scrolls.lua file.
+ 6. Then copy your entire rc file including the new changes you just made, and paste it into your rc file wherever you Dungeon Crawl Stone Soup
+ 7. Lastly start or continue a dungeon crawl run, then open the edit macro screen
+ 8. Choose "Create/edit macro from key"
+ 9. Choose a key on your keyboard to invoke this script (I use the single quote key `'`)
+ 10. Type (you can't copy/paste) the following `===start_identify_scrolls_and_potions` and hit enter when you are finished.
+ 11. Close the macro screen and you are good to go. You will get messages in the log when using the script even when there is nothing to identify so you will know its working.
