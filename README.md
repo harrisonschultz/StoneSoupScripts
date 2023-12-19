@@ -14,6 +14,8 @@ These scripts can be added to your rc file for Dungeon Crawl Stone Soup. They mu
 
 This will automatically identify all scrolls and potions in the recommended way to do so. It works is as follows. (Keep in mind the script can only know what your character knows. So if you have not yet "identified" the scroll of identify then when you run the script you will have to manually choose something to identify. After your character knows the identify scroll this will happen automatically.)
 
+### Standard behavior (`===start_identify_scrolls_and_potions`)
+
 - Potions are identified first unless you have no "scrolls of identify" (or have not discovered which scroll that is).
 
 - Scrolls are NEVER identified with "scroll of identify". The script will ALWAYS use the scroll.
@@ -23,6 +25,14 @@ This will automatically identify all scrolls and potions in the recommended way 
 - All scrolls/potions are used/identified in descending order starting with your highest quantity stack.
 
 - Unidentified potions will never be used automatically. Only unidentifed scrolls.
+
+- All scrolls that have prompts like brand weapon will prompt you like usual. When you finish the prompt the script will continue identifying.
+
+### Alternate behavior(`===start_identify_scrolls_and_potions_no_blind`)
+
+- Only identifies using scrolls of identify
+
+- Prioritizes scrolls over potions
 
 - All scrolls that have prompts like brand weapon will prompt you like usual. When you finish the prompt the script will continue identifying.
 
@@ -37,7 +47,7 @@ This will automatically identify all scrolls and potions in the recommended way 
  7. Lastly start or continue a dungeon crawl run, then open the edit macro screen
  8. Choose "Create/edit macro from key"
  9. Choose a key on your keyboard to invoke this script (I use the single quote key `'`)
- 10. Type (you can't copy/paste) the following `===start_identify_scrolls_and_potions` and hit enter when you are finished.
+ 10. Type (you can't copy/paste) the following `===start_identify_scrolls_and_potions` for standard behavior or `===start_identify_scrolls_and_potions_no_blind` for alternate behavior and hit enter when you are finished.
  11. Close the macro screen and you are good to go. You will get messages in the log when using the script even when there is nothing to identify so you will know its working.
 
 There is an example rc file for your reference in this repo

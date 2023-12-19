@@ -146,36 +146,110 @@ show_more = false
 force_more_message = aaaaa
 
 {
-local infinite_loop_safety_net = 0
+    local infinite_loop_safety_net = 0
 local infinite_loop_safety_net_max = 100
 
 local auto_identify_scrolls_and_potions = false
-local waiting_for_scroll_effect = false
 local remaining_unidentified_scrolls_and_potions = false
+local identify_scrolls_with_scrolls_of_identify = false
+local check_for_poison_gas = false
 
 function ready()
     if auto_identify_scrolls_and_potions and infinite_loop_safety_net < infinite_loop_safety_net_max then
         infinite_loop_safety_net = infinite_loop_safety_net + 1
+        allies = initialize_ally_table()
 
         if not remaining_unidentified_scrolls_and_potions then
             stop_identifying('Auto Identify Stopped - nothing left to identify.')
-        end
-
-        if waiting_for_scroll_effect then
-            take_action({'CMD_WAIT'})
-            waiting_for_scroll_effect = false
-        elseif remaining_unidentified_scrolls_and_potions then
+        elseif safe_to_identify(allies) then
             identify_scrolls_and_potions()
+        else 
+            crawl.sendkeys('5');
         end
     end
 end
 
-function c_interrupt_activity(aname)
-    if string.find(aname, "rest") and auto_identify_scrolls_and_potions then
+function safe_to_identify(allies)
+    if do_I_have_summons(allies) then
+        notify_print('Auto Identify - waiting for summons to disappear.')
+        return false
+    end
+
+    if you.silenced() then
+        notify_print('Auto Identify - waiting for silence to wear off')
+        return false
+    end
+
+    if check_for_poison_gas then
+        if is_there_poison_gas_nearby() then
+            notify_print('Auto Identify - waiting for poison gas to dissipate')
+            return false
+        else
+            check_for_poison_gas = false
+        end
+    end
+
+    return true
+end
+
+function c_message(text, channel)
+    if string.find(string.lower(text), 'it was a scroll of poison.') then
+        check_for_poison_gas = true
+    end
+end
+
+
+function c_interrupt_activity(aname, iname, cause, extra)
+    if string.find(aname, "rest") and not string.find(string.lower(extra), "done waiting") and auto_identify_scrolls_and_potions then
         stop_identifying('Auto Identify Stopped - rest interrupted.')
     end
 
     return false
+end
+
+function c_interrupt_activity(aname, iname, cause, extra)
+    if string.find(aname, "rest") and not string.find(string.lower(extra), "done waiting") and auto_identify_scrolls_and_potions then
+        stop_identifying('Auto Identify Stopped - rest interrupted.')
+    end
+
+    return false
+end
+
+function do_I_have_summons(monster_table)
+    return table_length(monster_table) > 0
+end
+
+function is_there_poison_gas_nearby()
+    local los = 4
+
+    for y = los, -los, -1 do
+        for x = -los, los do
+            local cloud = view.cloud_at(x, y)
+            if cloud and string.find(cloud, "poison gas") then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+function initialize_ally_table()
+    local los = you.los()
+    local allies = {}
+    local count = 0
+
+    for y = los, -los, -1 do
+        for x = -los, los do
+            local monster_details = monster.get_monster_at(x, y)
+            if monster_details and monster_details:is_safe() then
+                allies[count] = monster_details
+                count = count + 1
+            end
+        end
+    end
+
+    return allies
 end
 
 function identify_scrolls_and_potions() 
@@ -210,16 +284,34 @@ function identify_scrolls_and_potions()
         potion_unidentified_list = sort_item_array(potion_unidentified_list)
     end
     
-    if table_length(scroll_unidentified_list) > 0 or (table_length(potion_unidentified_list) > 0 and scroll_of_identify_letter) then
-        remaining_unidentified_scrolls_and_potions = true 
-    else
-        remaining_unidentified_scrolls_and_potions = false
-    end
+  
 
-    if scroll_of_identify_letter and table_length(potion_unidentified_list) > 0 then
-        identify_item(scroll_of_identify_letter, potion_unidentified_list[0])
-    elseif table_length(scroll_unidentified_list) > 0 then
-        read_scroll_and_rest(scroll_unidentified_list[0])
+    if identify_scrolls_with_scrolls_of_identify then
+        if scroll_of_identify_letter and (table_length(scroll_unidentified_list) > 0 or table_length(potion_unidentified_list) > 0) then
+            remaining_unidentified_scrolls_and_potions = true 
+        else
+            remaining_unidentified_scrolls_and_potions = false
+        end
+        
+        if scroll_of_identify_letter then
+            if table_length(scroll_unidentified_list) > 0 then
+                identify_item(scroll_of_identify_letter, scroll_unidentified_list[0])
+            elseif table_length(potion_unidentified_list) > 0 then
+                identify_item(scroll_of_identify_letter, potion_unidentified_list[0])
+            end
+        end
+    else
+        if table_length(scroll_unidentified_list) > 0 or (table_length(potion_unidentified_list) > 0 and scroll_of_identify_letter) then
+            remaining_unidentified_scrolls_and_potions = true 
+        else
+            remaining_unidentified_scrolls_and_potions = false
+        end
+
+        if scroll_of_identify_letter and table_length(potion_unidentified_list) > 0 then
+            identify_item(scroll_of_identify_letter, potion_unidentified_list[0])
+        elseif table_length(scroll_unidentified_list) > 0 then
+            read_scroll(scroll_unidentified_list[0])
+        end
     end
 end
 
@@ -229,6 +321,7 @@ function stop_identifying(message)
     end
     remaining_unidentified_scrolls_and_potions = false
     auto_identify_scrolls_and_potions = false
+    identify_scrolls_with_scrolls_of_identify = false
     infinite_loop_safety_net = 0
 end
 
@@ -236,8 +329,7 @@ function identify_item(identify_scroll_letter, item)
     crawl.sendkeys("r"..identify_scroll_letter..items.index_to_letter(item.slot))
 end
 
-function read_scroll_and_rest(scroll)
-    waiting_for_scroll_effect = true
+function read_scroll(scroll)
     crawl.sendkeys("r"..items.index_to_letter(scroll.slot))
 end
 
@@ -275,6 +367,12 @@ function start_identify_scrolls_and_potions()
     identify_scrolls_and_potions()
 end
 
+function start_identify_scrolls_and_potions_no_blind()
+    auto_identify_scrolls_and_potions = true
+    identify_scrolls_with_scrolls_of_identify = true
+    identify_scrolls_and_potions()
+end
+
 function table_length(T)
     local count = 0
     for _ in pairs(T) do count = count + 1 end
@@ -291,4 +389,5 @@ end
 function notify_print(message)
     crawl.mpr(message, notify_text_channel)
 end
+
 }
