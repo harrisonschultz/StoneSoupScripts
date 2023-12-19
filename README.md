@@ -24,6 +24,8 @@ This will automatically identify all scrolls and potions in the recommended way 
 
 - Unidentified potions will never be used automatically. Only unidentifed scrolls.
 
+- All scrolls that have prompts like brand weapon will prompt you like usual. When you finish the prompt the script will continue identifying.
+
 ### To Install and Use
 
  1. Copy your Dungeon Crawl Stone Soup rc file and paste it into your favorite text editor (like notepad)
