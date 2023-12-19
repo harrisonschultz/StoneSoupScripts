@@ -37,3 +37,5 @@ This will automatically identify all scrolls and potions in the recommended way 
  9. Choose a key on your keyboard to invoke this script (I use the single quote key `'`)
  10. Type (you can't copy/paste) the following `===start_identify_scrolls_and_potions` and hit enter when you are finished.
  11. Close the macro screen and you are good to go. You will get messages in the log when using the script even when there is nothing to identify so you will know its working.
+
+There is an example rc file for your reference in this repo
